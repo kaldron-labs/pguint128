@@ -11,6 +11,11 @@ extern Datum numeric_add(PG_FUNCTION_ARGS);
 extern Datum numeric_sub(PG_FUNCTION_ARGS);
 extern Datum numeric_mul(PG_FUNCTION_ARGS);
 extern Datum numeric_div(PG_FUNCTION_ARGS);
+extern Datum numeric_in(PG_FUNCTION_ARGS);
+extern Datum numeric_floor(PG_FUNCTION_ARGS);
+extern Datum numeric_uminus(PG_FUNCTION_ARGS);
+extern Datum numeric_lt(PG_FUNCTION_ARGS);
+extern Datum numeric_int8(PG_FUNCTION_ARGS);
 extern Datum int8_numeric(PG_FUNCTION_ARGS);
 
 #if PG_VERSION_NUM < 140000
