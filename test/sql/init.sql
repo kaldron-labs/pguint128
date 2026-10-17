@@ -1,1 +1,2 @@
+\set VERBOSITY verbose
 CREATE EXTENSION uint;

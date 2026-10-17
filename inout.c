@@ -8,7 +8,7 @@
 #include "uint.h"
 #include "ntoa.h"
 
-#if PG_VERSION_NUM < 100000
+#if PG_VERSION_NUM < 110000
 #define pq_sendint8(buf, value) pq_sendint((buf), (value), 1)
 #define pq_sendint16(buf, value) pq_sendint((buf), (value), 2)
 #define pq_sendint32(buf, value) pq_sendint((buf), (value), 4)
