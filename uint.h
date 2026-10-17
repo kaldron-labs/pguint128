@@ -4,6 +4,13 @@
 #include <fmgr.h>
 #include <catalog/catversion.h>
 
+#ifndef likely
+#define likely(x) __builtin_expect(!!(x), 1)
+#endif
+#ifndef unlikely
+#define unlikely(x) __builtin_expect(!!(x), 0)
+#endif
+
 #ifdef GET_1_BYTE
 #define DatumGetInt8(X)		((int8) GET_1_BYTE(X))  /* XXX */
 #else

@@ -1,9 +1,56 @@
 #include <postgres.h>
 #include <fmgr.h>
-#include <utils/fmgrprotos.h>
 #include <utils/memutils.h>
 
+#include "uint.h"
 #include "unumeric.h"
+
+/* These SQL-callable functions are stable, but their generated prototypes
+ * are absent from older PostgreSQL server headers. */
+extern Datum numeric_add(PG_FUNCTION_ARGS);
+extern Datum numeric_sub(PG_FUNCTION_ARGS);
+extern Datum numeric_mul(PG_FUNCTION_ARGS);
+extern Datum numeric_div(PG_FUNCTION_ARGS);
+extern Datum int8_numeric(PG_FUNCTION_ARGS);
+
+#if PG_VERSION_NUM < 140000
+Numeric
+int64_to_numeric(int64 value)
+{
+	return DatumGetNumeric(DirectFunctionCall1(int8_numeric,
+		Int64GetDatum(value)));
+}
+#endif
+
+/* Use the public fmgr entry points instead of PostgreSQL's internal
+ * numeric_*_opt_error helpers, which are not exported in newer releases. */
+Numeric
+numeric_add_(Numeric a, Numeric b)
+{
+	return DatumGetNumeric(DirectFunctionCall2(numeric_add,
+		NumericGetDatum(a), NumericGetDatum(b)));
+}
+
+Numeric
+numeric_sub_(Numeric a, Numeric b)
+{
+	return DatumGetNumeric(DirectFunctionCall2(numeric_sub,
+		NumericGetDatum(a), NumericGetDatum(b)));
+}
+
+Numeric
+numeric_mul_(Numeric a, Numeric b)
+{
+	return DatumGetNumeric(DirectFunctionCall2(numeric_mul,
+		NumericGetDatum(a), NumericGetDatum(b)));
+}
+
+Numeric
+numeric_div_(Numeric a, Numeric b)
+{
+	return DatumGetNumeric(DirectFunctionCall2(numeric_div,
+		NumericGetDatum(a), NumericGetDatum(b)));
+}
 
 /* #define UNDEBUG */
 
@@ -152,10 +199,10 @@ numeric_to_uint64(Numeric n)
 	numeric_log_("numeric_to_uint64(%s)", n);
 #endif
 	if (unlikely(!numeric_lt_(n, bit63))) {
-		Numeric high_down = numeric_mul_opt_error(n, bit1_, NULL);
+		Numeric high_down = numeric_mul_(n, bit1_);
 		Numeric high_floor = numeric_floor_(high_down);
-		Numeric high_up = numeric_mul_opt_error(high_floor, bit1, NULL);
-		Numeric low = numeric_sub_opt_error(n, high_up, NULL);
+		Numeric high_up = numeric_mul_(high_floor, bit1);
+		Numeric low = numeric_sub_(n, high_up);
 		uint64_t v =
 			(((uint64_t)numeric_to_int64(high_floor))<<1) |
 			numeric_to_int64(low);
@@ -183,10 +230,10 @@ numeric_to_uint128(Numeric n)
 	numeric_log_("numeric_to_uint128() bit63=%s", bit63);
 #endif
 	if (unlikely(!numeric_lt_(n, bit63))) {
-		Numeric high_down = numeric_mul_opt_error(n, bit63_, NULL);
+		Numeric high_down = numeric_mul_(n, bit63_);
 		Numeric high_floor = numeric_floor_(high_down);
-		Numeric high_up = numeric_mul_opt_error(high_floor, bit63, NULL);
-		Numeric low = numeric_sub_opt_error(n, high_up, NULL);
+		Numeric high_up = numeric_mul_(high_floor, bit63);
+		Numeric low = numeric_sub_(n, high_up);
 		__uint128_t v;
 #ifdef UNDEBUG
 		numeric_log_("numeric_to_uint128() high_down=%s", high_down);
@@ -195,10 +242,10 @@ numeric_to_uint128(Numeric n)
 		numeric_log_("numeric_to_uint128() low=%s", low);
 #endif
 		if (unlikely(!numeric_lt_(high_floor, bit63))) {
-			Numeric hhigh_down = numeric_mul_opt_error(high_floor, bit2_, NULL);
+			Numeric hhigh_down = numeric_mul_(high_floor, bit2_);
 			Numeric hhigh_floor = numeric_floor_(hhigh_down);
-			Numeric hhigh_up = numeric_mul_opt_error(hhigh_floor, bit2, NULL);
-			Numeric hlow = numeric_sub_opt_error(high_floor, hhigh_up, NULL);
+			Numeric hhigh_up = numeric_mul_(hhigh_floor, bit2);
+			Numeric hlow = numeric_sub_(high_floor, hhigh_up);
 #ifdef UNDEBUG
 			numeric_log_("numeric_to_uint128() hhigh_down=%s", hhigh_down);
 			numeric_log_("numeric_to_uint128() hhigh_floor=%s", hhigh_floor);
@@ -263,7 +310,7 @@ uint64_to_numeric(uint64_t u)
 		uint_init_();
 		{
 			Numeric intermediate = int64_to_numeric(u & ~(1ULL<<63));
-			Numeric v = numeric_add_opt_error(intermediate, bit63, NULL);
+			Numeric v = numeric_add_(intermediate, bit63);
 			pfree(intermediate);
 			return v;
 		}
@@ -279,8 +326,8 @@ uint128_to_numeric(__uint128_t u)
 		{
 			Numeric high = uint64_to_numeric(u>>64);
 			Numeric low = uint64_to_numeric(u);
-			Numeric high_up = numeric_mul_opt_error(high, bit64, NULL);
-			Numeric intermediate = numeric_add_opt_error(high_up, low, NULL);
+			Numeric high_up = numeric_mul_(high, bit64);
+			Numeric intermediate = numeric_add_(high_up, low);
 			/* flooring is necessary following the multiply, regrettably */
 			Numeric v = numeric_floor_(intermediate);
 			pfree(high);

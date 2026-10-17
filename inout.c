@@ -8,6 +8,12 @@
 #include "uint.h"
 #include "ntoa.h"
 
+#if PG_VERSION_NUM < 100000
+#define pq_sendint8(buf, value) pq_sendint((buf), (value), 1)
+#define pq_sendint16(buf, value) pq_sendint((buf), (value), 2)
+#define pq_sendint32(buf, value) pq_sendint((buf), (value), 4)
+#endif
+
 /* #include <inttypes.h> */
 #include <limits.h>
 
@@ -466,7 +472,6 @@ uint16out(PG_FUNCTION_ARGS)
 	PG_RETURN_CSTRING(result);
 }
 
-#include <port/pg_bswap.h>
 #ifndef pg_bswap128
 #ifdef WORDS_BIGENDIAN
 #define pg_bswap128(x) (x)
@@ -478,8 +483,8 @@ inline static __uint128_t
 pg_bswap128(__uint128_t i)
 {
 	return
-		((__uint128_t)(pg_bswap64(i))<<64) |
-		(__uint128_t)pg_bswap64(i>>64);
+		((__uint128_t)(__builtin_bswap64((uint64_t)i))<<64) |
+		(__uint128_t)__builtin_bswap64((uint64_t)(i>>64));
 }
 #endif /* __GNUC__ && !__llvm__ */
 #endif /* WORDS_BIGENDIAN */

@@ -1,5 +1,14 @@
 #include <utils/numeric.h>
 
+#if PG_VERSION_NUM < 140000
+Numeric int64_to_numeric(int64 value);
+#endif
+
+Numeric numeric_add_(Numeric a, Numeric b);
+Numeric numeric_sub_(Numeric a, Numeric b);
+Numeric numeric_mul_(Numeric a, Numeric b);
+Numeric numeric_div_(Numeric a, Numeric b);
+
 int64_t numeric_to_int64(Numeric n);
 
 uint64_t numeric_to_uint64(Numeric n);

@@ -160,7 +160,7 @@ Datum uint8_avg(PG_FUNCTION_ARGS) {
 
 	sum = uint64_to_numeric(state[0]);
 	count = uint64_to_numeric(state[1]);
-	result = numeric_div_opt_error(sum, count, NULL);
+	result = numeric_div_(sum, count);
 	pfree(sum);
 	pfree(count);
 
@@ -216,7 +216,7 @@ Datum int16_avg(PG_FUNCTION_ARGS) {
 
 	sum = int128_to_numeric(state[0].i);
 	count = int128_to_numeric(state[1].i);
-	result = numeric_div_opt_error(sum, count, NULL);
+	result = numeric_div_(sum, count);
 	pfree(sum);
 	pfree(count);
 
@@ -272,7 +272,7 @@ Datum uint16_avg(PG_FUNCTION_ARGS) {
 
 	sum = uint128_to_numeric(state[0].i);
 	count = uint128_to_numeric(state[1].i);
-	result = numeric_div_opt_error(sum, count, NULL);
+	result = numeric_div_(sum, count);
 	pfree(sum);
 	pfree(count);
 
