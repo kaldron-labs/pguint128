@@ -31,13 +31,14 @@ uint--$(extension_version).sql: uint.sql hash.sql hex.sql operators.sql
 ifeq ($(strip $(PYTHON)),)
 PYTHON := python
 endif
+PYFLAKES ?= pyflakes
 
 operators.c operators.sql test/sql/operators.sql: generate.py
 	$(PYTHON) $< $(MAJORVERSION)
 
 python-check: generate.py
-	pep8 $^
-	pyflakes $^
+	pycodestyle $^
+	$(PYFLAKES) $^
 	pylint $^
 
 ntoa_test.o: ntoa_test.c

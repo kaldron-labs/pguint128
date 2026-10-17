@@ -24,8 +24,8 @@ other compilers. MSVC completely lacks support for 128bit integers.
 Installation
 ------------
 
-PostgreSQL version 9.1 or later is required.
-Only 64-bit builds are supported.
+PostgreSQL version 9.2 or later is required.  Currently, only 64-bit
+builds are supported.
 
 To build and install this module:
 
