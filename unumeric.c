@@ -59,12 +59,6 @@ numeric_in_(const char *s)
 	return DatumGetNumeric(DirectFunctionCall3(numeric_in,
 		CStringGetDatum(s), (Datum)0, (Datum)typmod));
 }
-static Numeric
-numeric_round_(Numeric v)
-{
-	return DatumGetNumeric(DirectFunctionCall2(
-		numeric_round, NumericGetDatum(v), Int8GetDatum(0)));
-}
 
 static Numeric
 numeric_floor_(Numeric v)
